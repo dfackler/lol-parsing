@@ -22,7 +22,7 @@
 # Output a set of files where filename = attribute and it contains a list of animals that have that attribute
 
 ##############################################
-### Install and load packages ###
+#### Install and load packages ####
 ##############################################
 list_of_packages <- c("dplyr", "readr", "stringr")
 
@@ -32,7 +32,7 @@ if(length(new_packages)) install.packages(new_packages)
 lapply(list_of_packages, require, character.only = TRUE)
 
 ##############################################
-### Set Paths ###
+#### Set Paths ####
 ##############################################
 # TODO: set path as argument
 input_dir <- "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2"
@@ -43,7 +43,7 @@ if(!dir.exists(output_dir)){
 }
 
 ##############################################
-### Read Files ###
+#### Read Files ####
 ##############################################
 classes <- read_delim(paste(input_dir, "classes.txt", sep = "/"), 
                       delim = "\t", col_names = FALSE)
@@ -57,7 +57,7 @@ binary_matrix <- read_delim(paste(input_dir, "predicate-matrix-binary.txt", sep 
                             delim = " ", col_names = FALSE)
 
 ##############################################
-### Combine and clean ###
+#### Combine and clean ####
 ##############################################
 colnames(binary_matrix) <- attributes %>% pull(attribute)
 binary_matrix <- binary_matrix %>% mutate(class = pull(classes, class)) %>% 
@@ -67,7 +67,7 @@ binary_matrix <- binary_matrix %>% mutate(class = pull(classes, class)) %>%
 binary_matrix <- binary_matrix %>% mutate(class = str_replace(class, "\\+", "_"))
 
 ##############################################
-### Write out attribute files ###
+#### Write out attribute files ####
 ##############################################
 attributes_to_write <- binary_matrix %>% select(-class) %>% colnames()
 files_to_write <- paste0(attributes_to_write, ".txt")
