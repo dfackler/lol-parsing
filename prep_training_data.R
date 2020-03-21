@@ -35,8 +35,8 @@ lapply(list_of_packages, require, character.only = TRUE)
 ### Set Paths ###
 ##############################################
 # TODO: set path as argument
-input_dir <- "/Users/dfackler/Desktop/Animals_with_Attributes2"
-output_dir <- "/Users/dfackler/Desktop/Animals_with_Attributes2/prepped"
+input_dir <- "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2"
+output_dir <- "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped"
 
 if(!dir.exists(output_dir)){
   dir.create(output_dir)
@@ -77,5 +77,11 @@ for(i in 1:length(files_to_write)){
     pull(class)
   file_to_write <- data.frame(file_to_write)
   colnames(file_to_write) <- attributes_to_write[i]
-  write_delim(file_to_write, paste(output_dir, files_to_write[i], sep = "/"), delim = "\t")
+  write_delim(file_to_write, paste(output_dir, files_to_write[i], sep = "/"), delim = "\t", col_names = FALSE)
 }
+
+print(paste0("Output Directory: ", output_dir))
+print(paste0("Files Created: ", i))
+
+
+
