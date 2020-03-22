@@ -15,8 +15,6 @@ library(readr)
 library(stringr)
 library(cluster)
 
-source("/Users/dfackler/Desktop/workSpace/lol-parsing/helper_functions.R")
-
 # args = c("/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_train",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_test",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped_test/active.txt",
@@ -27,18 +25,24 @@ source("/Users/dfackler/Desktop/workSpace/lol-parsing/helper_functions.R")
 ##############################################
 #### Read args and check input files ####
 ##############################################
-args = commandArgs(trailingOnly=TRUE)
-input_dir = args[1]
-output_dir = args[2]
-files_to_read <- args[3:length(args)]
+args = commandArgs(trailingOnly=FALSE)
+
+# source helper script in same directory
+file_name <- "--file="
+script_name <- str_replace(args[grep(file_name, args)], file_name, "")
+script_basename <- dirname(script_name)
+helper_script <- file.path(script_basename, "helper_functions.R")
+print(paste("Sourcing",helper_script,"from",script_name))
+source(helper_script)
+
+# increment user passed arguments to get past trailing args
+# TODO: define explicit name for arguments
+input_dir = args[6]
+output_dir = args[7]
+files_to_read <- args[8:length(args)]
 
 # initial.options <- commandArgs(trailingOnly = FALSE)
-# file.arg.name <- "--file="
-# script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
-# script.basename <- dirname(script.name)
-# other.name <- file.path(script.basename, "other.R")
-# print(paste("Sourcing",other.name,"from",script.name))
-# source(other.name)
+
 
 if(length(files_to_read) == 0){
   print("No files to add provided. Exiting.\n")
@@ -64,6 +68,16 @@ grouping_file <- read_delim(paste(input_dir, "grouping_file.txt", sep = "/"),
                               grouping = col_integer()
                             ))
 load(paste(input_dir, "km.RData", sep = "/"))
+
+##############################################
+#### Check to see if files have already been grouped in grouping_file.txt ####
+##############################################
+if(sum(files_to_read %in% pull(grouping_file, files)) > 0){
+  print("Some files set to be added already exist in grouping file. Exiting.")
+  print("Already grouped files:")
+  print(files_to_read[files_to_read %in% pull(grouping_file, files)])
+  quit(status = 1)
+}
 
 ##############################################
 #### Read in files ####
@@ -97,7 +111,7 @@ print(paste0("Total number of new identities: ", length(unseen_ids)))
 id_df[,missing_ids] <- rep(FALSE, 5)
 
 ##############################################
-#### Wipe unseen ids ####
+#### Wipe or handle unseen ids ####
 ##############################################
 # is this needed?
 
@@ -110,18 +124,41 @@ dist_tbl <- apply(id_df, MARGIN = 1, FUN = function(x){get_cluster_distance(km, 
 # select best cluster by min distance
 best_cluster <- apply(dist_tbl, 2, which.min)
 
-grouping_file <- rbind(grouping_file, data.frame(files = files_to_read,
-                          grouping = best_cluster,
-                          stringsAsFactors = FALSE))
+new_group_df <- data.frame(files = files_to_read,
+                           grouping = best_cluster,
+                           stringsAsFactors = FALSE)
+
+grouping_file <- rbind(grouping_file, new_group_df)
 
 ##############################################
 #### Estimate "quality" of new grouping ####
 ##############################################
-# distance to new cluster (min distance could still be very large)
+# note: NOT estimating quality of the group, just how well new list fits into group
 
-# change in withinss (show whether new point is furthest out)
+# gather medoid distance metrics (note: medoids NOT updated to consider new points)
+dist_to_best <- apply(dist_tbl, 2, min)
+avg_dist_to_meds <- apply(dist_tbl, 2, mean)
+dist_to_worst <- apply(dist_tbl, 2, max)
+mean_dist_in_group <- sapply(best_cluster, FUN = function(x){km$clusinfo[x,3]})
+max_dist_in_group <- sapply(best_cluster, FUN = function(x){km$clusinfo[x,2]})
 
-# percentile/ranking towards center
+new_group_df <- new_group_df %>% mutate(dist_to_best = dist_to_best,
+                                        avg_dist_to_meds = avg_dist_to_meds,
+                                        dist_to_worst = dist_to_worst,
+                                        mean_dist_in_group = mean_dist_in_group,
+                                        max_dist_in_group = max_dist_in_group
+                                        )
+
+# classify new list quality-in-group based on comparisons to avg and max dist
+# equal to 0 (perfect), less than avg list in group (good fit), more than average but less than max (okay fit), or more than max (bad fit)
+new_group_df <- new_group_df %>% mutate(
+  fit_quality = case_when(
+    dist_to_best == 0 ~ "perfect",
+    dist_to_best > max_dist_in_group ~ "bad",
+    dist_to_best > mean_dist_in_group ~ "okay",
+    dist_to_best < mean_dist_in_group ~ "good"
+  )
+)
 
 ##############################################
 #### Provide outputs ####
@@ -129,5 +166,5 @@ grouping_file <- rbind(grouping_file, data.frame(files = files_to_read,
 write_delim(grouping_file, paste(output_dir, "grouping_file.txt", sep = "/"), delim = "\t")
 print(paste0("Updated grouping file written to: ", paste(output_dir, "grouping_file.txt", sep = "/")))
 print("New groups: ")
-print(best_cluster)
+print(new_group_df)
 

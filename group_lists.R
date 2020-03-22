@@ -10,16 +10,25 @@ library(readr)
 library(stringr)
 library(cluster)
 
-source("/Users/dfackler/Desktop/workSpace/lol-parsing/helper_functions.R")
-
 # input_dir = "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped"
 # output_file = "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_map.txt"
 ##############################################
 #### Read args and check files ####
 ##############################################
-args = commandArgs(trailingOnly=TRUE)
-input_dir = args[1]
-output_dir = args[2]
+args = commandArgs(trailingOnly=FALSE)
+
+# source helper script in same directory
+file_name <- "--file="
+script_name <- str_replace(args[grep(file_name, args)], file_name, "")
+script_basename <- dirname(script_name)
+helper_script <- file.path(script_basename, "helper_functions.R")
+print(paste("Sourcing",helper_script,"from",script_name))
+source(helper_script)
+
+# increment user passed arguments to get past trailing args
+# TODO: define explicit name for arguments
+input_dir = args[6]
+output_dir = args[7]
 
 if(!dir.exists(input_dir)){
   print(paste0("Input directory provided does not exist. Exiting.\nInput directory: ", input_dir, "\n"))

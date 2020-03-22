@@ -1,6 +1,8 @@
 # helper_functions.R
 
 # files to read must be vector of full file paths
+# will read them in as a list of lists
+# return value: list including the list-of-lists and vector of unique ids
 read_in_lol <- function(files_to_read){
   require(readr)
   lol <- list()
@@ -21,6 +23,7 @@ read_in_lol <- function(files_to_read){
 # lol must be list of identities in files (output from read_in_lol)
 # TODO: add sampling for when data gets big?
 # TODO: keep as sparse matrix for when data gets big?
+# return value: data frame with binary columns for presence in list
 lol_to_table <- function(lol, unique_ids, files_to_read){
   require(stringr)
   id_df <- data.frame(t(data.frame(lapply(lol, FUN = function(x){unique_ids %in% x}))))
@@ -31,12 +34,12 @@ lol_to_table <- function(lol, unique_ids, files_to_read){
   return(id_df)
 }
 
-# calculate euclidean distance
+# return value: euclidean distance between two vectors
 euclidean_func <- function(x, y){
-  sqrt(sum((x-y)^2))
+  return(sqrt(sum((x-y)^2)))
 }
 
-# choose best cluster based on min distance
+# return value: distance from each cluster center
 get_cluster_distance <- function(km, new_data){
   return(sapply(1:k, FUN = function(i) euclidean_func(km$medoids[i,], new_data)))
 }
