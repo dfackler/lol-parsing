@@ -7,7 +7,8 @@
 # note: will NOT update km.RData with new groups, attributes, or identities
 
 # TODO: make sure to handle new identities being added
-# TODO: check for wrong file convention
+# TODO: check for wrong file structure
+# TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (new script?)
 
 library(dplyr)
 library(readr)
@@ -16,8 +17,8 @@ library(cluster)
 
 source("/Users/dfackler/Desktop/workSpace/lol-parsing/helper_functions.R")
 
-# input_dir = "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_train"
 # args = c("/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_train",
+# "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_test",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped_test/active.txt",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped_test/agility.txt",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped_test/arctic.txt",
@@ -28,7 +29,8 @@ source("/Users/dfackler/Desktop/workSpace/lol-parsing/helper_functions.R")
 ##############################################
 args = commandArgs(trailingOnly=TRUE)
 input_dir = args[1]
-files_to_read <- args[2:length(args)]
+output_dir = args[2]
+files_to_read <- args[3:length(args)]
 
 # initial.options <- commandArgs(trailingOnly = FALSE)
 # file.arg.name <- "--file="
@@ -38,11 +40,10 @@ files_to_read <- args[2:length(args)]
 # print(paste("Sourcing",other.name,"from",script.name))
 # source(other.name)
 
-if(len(files_to_read) == 0){
+if(length(files_to_read) == 0){
   print("No files to add provided. Exiting.\n")
   quit(status = 1)
 }
-
 if(!dir.exists(input_dir)){
   print(paste0("Input directory provided does not exist. Exiting.\nInput directory: ", input_dir, "\n"))
   quit(status = 1)
@@ -50,6 +51,10 @@ if(!dir.exists(input_dir)){
 if(!file.exists(paste(input_dir, "grouping_file.txt", sep = "/")) | !file.exists(paste(input_dir, "km.RData", sep = "/"))){
   print("Required files not found in input directory. Exiting\n")
   quit(status = 1)
+}
+if(!dir.exists(output_dir)){
+  #TODO: handle dir creation failure, don't want to enable recursive creation
+  dir.create(output_dir) 
 }
 
 # load grouping file and km object
@@ -79,7 +84,7 @@ id_df <- lol_to_table(lol, new_unique_ids, files_to_read)
 ##############################################
 prev_ids <- colnames(km$medoids)
 unseen_ids <- new_unique_ids[!(new_unique_ids %in% colnames(km$medoids))]
-missing_ids <- prev_ids[!(prev_ids %in% new_ids)]
+missing_ids <- prev_ids[!(prev_ids %in% new_unique_ids)]
 print(paste0("Total number of new files: ", length(files_to_read)))
 print(paste0("Total number of existing identities in groupings: ", length(prev_ids)))
 print(paste0("Total number of identities in files to group: ", length(new_unique_ids)))
@@ -88,8 +93,8 @@ print(paste0("Total number of new identities: ", length(unseen_ids)))
 ##############################################
 #### Add missing dummy cols ####
 ##############################################
-# is this needed?
-
+# can this be skipped?
+id_df[,missing_ids] <- rep(FALSE, 5)
 
 ##############################################
 #### Wipe unseen ids ####
@@ -99,4 +104,30 @@ print(paste0("Total number of new identities: ", length(unseen_ids)))
 ##############################################
 #### Calculate best existing group for each new list ####
 ##############################################
-get.cluster2 <- function(res, y) which.min(colSums((t(res$medoids)-y)^2))
+k <- max(km$clustering)
+# get distance to each cluster
+dist_tbl <- apply(id_df, MARGIN = 1, FUN = function(x){get_cluster_distance(km, x)})
+# select best cluster by min distance
+best_cluster <- apply(dist_tbl, 2, which.min)
+
+grouping_file <- rbind(grouping_file, data.frame(files = files_to_read,
+                          grouping = best_cluster,
+                          stringsAsFactors = FALSE))
+
+##############################################
+#### Estimate "quality" of new grouping ####
+##############################################
+# distance to new cluster (min distance could still be very large)
+
+# change in withinss (show whether new point is furthest out)
+
+# percentile/ranking towards center
+
+##############################################
+#### Provide outputs ####
+##############################################
+write_delim(grouping_file, paste(output_dir, "grouping_file.txt", sep = "/"), delim = "\t")
+print(paste0("Updated grouping file written to: ", paste(output_dir, "grouping_file.txt", sep = "/")))
+print("New groups: ")
+print(best_cluster)
+

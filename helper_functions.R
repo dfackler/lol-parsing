@@ -30,3 +30,13 @@ lol_to_table <- function(lol, unique_ids, files_to_read){
   colnames(id_df) <- unique_ids
   return(id_df)
 }
+
+# calculate euclidean distance
+euclidean_func <- function(x, y){
+  sqrt(sum((x-y)^2))
+}
+
+# choose best cluster based on min distance
+get_cluster_distance <- function(km, new_data){
+  return(sapply(1:k, FUN = function(i) euclidean_func(km$medoids[i,], new_data)))
+}

@@ -25,8 +25,8 @@ if(!dir.exists(input_dir)){
   print(paste0("Input directory provided does not exist. Exiting.\nInput directory: ", input_dir, "\n"))
   quit(status = 1)
 }
-file_names = list.files(input_dir)
-if(length(file_names) == 0){
+files_to_read = list.files(input_dir, full.names = TRUE)
+if(length(files_to_read) == 0){
   print("Directory is empty. Exiting\n")
   quit(status = 1)
 }
@@ -40,7 +40,6 @@ if(!dir.exists(output_dir)){
 #### Read in files ####
 ##############################################
 # read in files to list and track unique identities
-files_to_read <- paste(input_dir, file_names, sep = "/")
 lol <- read_in_lol(files_to_read)
 unique_ids <- lol[[2]]
 lol <- lol[[1]]
@@ -50,7 +49,7 @@ lol <- lol[[1]]
 ##############################################
 # convert to dataframe with binary cols
 # TODO: add sampling for when data gets big?
-id_df <- lol_to_table(lol, unique_ids)
+id_df <- lol_to_table(lol, unique_ids, files_to_read)
 
 print(paste0("Total number of identities: ", length(unique_ids)))
 print(paste0("Total number of files: ", length(files_to_read)))
@@ -75,25 +74,26 @@ avg_sil <- sapply(k_vals, silhouette_score, id_df)
 best_k_guess <- k_vals[which(avg_sil == max(avg_sil))]
 
 # create dataframe of identities and groups of different values
-km <- pam(id_df, k = best_k_guess)
+km <- pam(id_df, k = best_k_guess, metric = "euclidean")
 clus_info <- data.frame(cluster = 1:best_k_guess, km$clusinfo, stringsAsFactors = FALSE)
 clus_info <- clus_info %>% arrange(desc(size))
-grouping_df <- data.frame(files = files_to_read,
+grouping_file <- data.frame(files = files_to_read,
                           grouping = km$clustering,
                           stringsAsFactors = FALSE)
 # TODO: look into identifying large clusters with high withinss and breaking them up
-
+# TODO: try other clustering types to get beyond strict partitioning
+#     ex) heirarchical, overlapping
 
 ##############################################
 #### Provide outputs ####
 ##############################################
-write_delim(grouping_df, paste(output_dir, "grouping_file.txt", sep = "/"), delim = "\t")
+write_delim(grouping_file, paste(output_dir, "grouping_file.txt", sep = "/"), delim = "\t")
 print(paste0("Grouping file written to: ", paste(output_dir, "grouping_file.txt", sep = "/")))
 save(km, file = paste(output_dir, "km.RData", sep = "/"))
 print(paste0("Clustering object saved to: ", paste(output_dir, "km.RData", sep = "/")))
 print(paste0("Best K Guess (using sillhouette method): ", best_k_guess))
 print("Grouping counts:")
-print(table(pull(grouping_df, grouping)))
+print(table(pull(grouping_file, grouping)))
 print("Cluster metrics:")
 print(clus_info)
 
