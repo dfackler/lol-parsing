@@ -107,7 +107,7 @@ print(paste0("Total number of new identities: ", length(unseen_ids)))
 ##############################################
 #### Add missing dummy cols ####
 ##############################################
-id_df[,missing_ids] <- rep(FALSE, 5)
+id_df[,missing_ids] <- rep(FALSE, nrow(id_df))
 
 ##############################################
 #### Wipe unseen ids ####

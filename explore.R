@@ -34,3 +34,26 @@ kmeans_groups <- data.frame(attributes = rownames(num_matrixt),
                             k15 = k_groups[[4]],
                             stringsAsFactors = FALSE)
 k1$withinss
+
+##############################################
+### Read and prep matlab files ###
+##############################################
+install.packages("rmatio")
+library(rmatio)
+osr <- read.mat("/Users/dfackler/Desktop/lol_training_data/relative_attributes/osr/data.mat")
+
+class_names <- unlist(osr$class_names)
+attribute_names <- unlist(osr$attribute_names)
+class_labels <- osr$class_labels
+attribute_labels <- apply(osr$relative_att_predictions, 1, which.max)
+
+class_attr <- paste(class_labels, attribute_labels, sep = "_")
+
+
+pubfig_file <- read.mat("/Users/dfackler/Desktop/lol_training_data/relative_attributes/pubfig/data.mat")
+
+shoes <- read.mat("/Users/dfackler/Desktop/lol_training_data/whittle-search-shoes-dataset-cvpr2012/shoes_attributes.mat")
+class_names <- unlist(shoes$class_names)
+attribute_names <- unlist(shoes$attribute_names)
+class_labels <- shoes$class_labels
+attribute_labels <- apply(shoes$relative_att_predictions, 1, which.max)
