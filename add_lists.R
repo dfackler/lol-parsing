@@ -8,7 +8,7 @@
 
 # TODO: make sure to handle new identities being added
 # TODO: check for wrong file structure
-# TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (new script?)
+# TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (optional named arg?)
 
 library(dplyr)
 library(readr)
@@ -107,13 +107,13 @@ print(paste0("Total number of new identities: ", length(unseen_ids)))
 ##############################################
 #### Add missing dummy cols ####
 ##############################################
-# can this be skipped?
 id_df[,missing_ids] <- rep(FALSE, 5)
 
 ##############################################
-#### Wipe or handle unseen ids ####
+#### Wipe unseen ids ####
 ##############################################
-# is this needed?
+# is this the best way? should a list with unseen ids be punished in distance metric?
+id_df <- id_df %>% select(-one_of(unseen_ids))
 
 ##############################################
 #### Calculate best existing group for each new list ####
@@ -150,10 +150,12 @@ new_group_df <- new_group_df %>% mutate(dist_to_best = dist_to_best,
                                         )
 
 # classify new list quality-in-group based on comparisons to avg and max dist
-# equal to 0 (perfect), less than avg list in group (good fit), more than average but less than max (okay fit), or more than max (bad fit)
+# equal to 0 (perfect), less than avg list in group (good fit), more than average but less than max (okay fit), 
+# more than max (bad fit), or if mean distance equal to 0 due to single point cluster (undefined)
 new_group_df <- new_group_df %>% mutate(
   fit_quality = case_when(
     dist_to_best == 0 ~ "perfect",
+    mean_dist_in_group == 0 ~ "undefined",
     dist_to_best > max_dist_in_group ~ "bad",
     dist_to_best > mean_dist_in_group ~ "okay",
     dist_to_best < mean_dist_in_group ~ "good"
