@@ -6,9 +6,9 @@
 # input: path to directory with group_file.txt and km.RData, space separated list of files to add to grouping
 # note: will NOT update km.RData with new groups, attributes, or identities
 
-# TODO: make sure to handle new identities being added
 # TODO: check for wrong file structure
 # TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (optional named arg?)
+# TODO: update km with new lists (not sure if want to do this)
 
 library(dplyr)
 library(readr)
@@ -131,7 +131,7 @@ new_group_df <- data.frame(files = files_to_read,
 grouping_file <- rbind(grouping_file, new_group_df)
 
 ##############################################
-#### Estimate "quality" of new grouping ####
+#### Estimate quality of new grouping ####
 ##############################################
 # note: NOT estimating quality of the group, just how well new list fits into group
 
@@ -152,6 +152,8 @@ new_group_df <- new_group_df %>% mutate(dist_to_best = dist_to_best,
 # classify new list quality-in-group based on comparisons to avg and max dist
 # equal to 0 (perfect), less than avg list in group (good fit), more than average but less than max (okay fit), 
 # more than max (bad fit), or if mean distance equal to 0 due to single point cluster (undefined)
+# TODO: make this more granular - score between 0 and 1?
+#       could require a lot more processing time and memory if compare to individual points instead of group aggregate metrics
 new_group_df <- new_group_df %>% mutate(
   fit_quality = case_when(
     dist_to_best == 0 ~ "perfect",

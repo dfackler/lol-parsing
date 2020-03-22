@@ -91,7 +91,7 @@ grouping_file <- data.frame(files = files_to_read,
                           stringsAsFactors = FALSE)
 # TODO: look into identifying large clusters with high withinss and breaking them up
 # TODO: try other clustering types to get beyond strict partitioning
-#     ex) heirarchical, overlapping
+#     ex) heirarchical, overlapping, self-organizing map
 
 ##############################################
 #### Provide outputs ####
