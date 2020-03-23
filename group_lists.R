@@ -5,6 +5,9 @@
 # input: path to input directory, output dir
 # output: grouping file, clustering object
 
+# TODO: provide optional mapping file as input which defines manual groups to create but still generate distance metrics
+#       for the scenario where lists might be grouped by common labels (new script?)
+
 library(dplyr)
 library(readr)
 library(stringr)
@@ -67,7 +70,6 @@ print(paste0("Total number of files: ", length(files_to_read)))
 #### Set groups ####
 ##############################################
 # find good k value
-set.seed(123)
 # sillhouette method: https://medium.com/codesmart/r-series-k-means-clustering-silhouette-794774b46586
 silhouette_score <- function(k, df){
   km <- pam(df, k = k) # more robust kmeans
@@ -79,10 +81,12 @@ silhouette_score <- function(k, df){
 # TODO: consider running second round that searches between the one k below max and one k above max when data is big and step is large
 seq_step <- max(1, floor((nrow(id_df)-4)/100)) 
 k_vals <- seq(4, floor(nrow(id_df)/2), seq_step) 
+set.seed(123)
 avg_sil <- sapply(k_vals, silhouette_score, id_df)
 best_k_guess <- k_vals[which(avg_sil == max(avg_sil))]
 
 # create dataframe of identities and groups of different values
+set.seed(123)
 km <- pam(id_df, k = best_k_guess, metric = "euclidean")
 clus_info <- data.frame(cluster = 1:best_k_guess, km$clusinfo, stringsAsFactors = FALSE)
 clus_info <- clus_info %>% arrange(desc(size))

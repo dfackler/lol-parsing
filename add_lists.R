@@ -8,7 +8,7 @@
 
 # TODO: check for wrong file structure
 # TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (optional named arg?)
-# TODO: update km with new lists (not sure if want to do this)
+# TODO: update km with new lists (maybe?)
 
 library(dplyr)
 library(readr)
@@ -40,9 +40,6 @@ source(helper_script)
 input_dir = args[6]
 output_dir = args[7]
 files_to_read <- args[8:length(args)]
-
-# initial.options <- commandArgs(trailingOnly = FALSE)
-
 
 if(length(files_to_read) == 0){
   print("No files to add provided. Exiting.\n")
@@ -154,13 +151,14 @@ new_group_df <- new_group_df %>% mutate(dist_to_best = dist_to_best,
 # more than max (bad fit), or if mean distance equal to 0 due to single point cluster (undefined)
 # TODO: make this more granular - score between 0 and 1?
 #       could require a lot more processing time and memory if compare to individual points instead of group aggregate metrics
+#       quicker way would be to use more ratios of the different aggregate metrics already provided
 new_group_df <- new_group_df %>% mutate(
   fit_quality = case_when(
     dist_to_best == 0 ~ "perfect",
     mean_dist_in_group == 0 ~ "undefined",
-    dist_to_best > max_dist_in_group ~ "bad",
+    dist_to_best >= max_dist_in_group ~ "bad",
     dist_to_best > mean_dist_in_group ~ "okay",
-    dist_to_best < mean_dist_in_group ~ "good"
+    dist_to_best <= mean_dist_in_group ~ "good"
   )
 )
 

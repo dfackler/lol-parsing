@@ -34,11 +34,12 @@ lapply(list_of_packages, require, character.only = TRUE)
 ##############################################
 #### Set Paths ####
 ##############################################
-# TODO: set path as argument
-input_dir <- "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2"
-output_dir <- "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped"
+args = commandArgs(trailingOnly=TRUE)
+input_dir <- args[1]
+output_dir <- args[2]
 
 if(!dir.exists(output_dir)){
+  #TODO: handle dir creation failure, don't want to enable recursive creation
   dir.create(output_dir)
 }
 
@@ -46,15 +47,26 @@ if(!dir.exists(output_dir)){
 #### Read Files ####
 ##############################################
 classes <- read_delim(paste(input_dir, "classes.txt", sep = "/"), 
-                      delim = "\t", col_names = FALSE)
+                      delim = "\t", col_names = FALSE,
+                      col_types = cols(
+                        X1 = col_character(),
+                        X2 = col_character()
+                      ))
 classes <- classes %>% rename(row_index = X1, class = X2)
 
 attributes <- read_delim(paste(input_dir, "predicates.txt", sep = "/"), 
-                         delim = "\t", col_names = FALSE)
+                         delim = "\t", col_names = FALSE,
+                         col_types = cols(
+                           X1 = col_character(),
+                           X2 = col_character()
+                         ))
 attributes <- attributes %>% rename(col_index = X1, attribute = X2)
 
 binary_matrix <- read_delim(paste(input_dir, "predicate-matrix-binary.txt", sep = "/"), 
-                            delim = " ", col_names = FALSE)
+                            delim = " ", col_names = FALSE,
+                            col_types = cols(
+                              .default = col_double()
+                            ))
 
 ##############################################
 #### Combine and clean ####
