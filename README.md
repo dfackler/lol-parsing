@@ -3,6 +3,7 @@ Scripts for reading and grouping lists of lists. Also provides ability to classi
 
 ## Scripts
 `prep_training_data.R` - Script to organize Animal test data. Takes an input directory with unzipped contents of https://cvml.ist.ac.at/AwA2/AwA2-base.zip (this link will download a 32KB zip file which expands to 80KB). See https://cvml.ist.ac.at/AwA2/ for a description of the dataset. This data set has 85 attributes and 50 identities (animals).
+
 *notes: I am working on finding a larger data set. https://www.ecse.rpi.edu/~cvrl/database/AttributeDataset.htm has a list of attribute data sets but many of the data sets with a larger number of identities contain only a handful of attributes. 85 attributes for 50 identities is not ideal.*
 
 example call) `Rscript prep_training_data.R /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped` 
@@ -36,6 +37,7 @@ german_shepherd
 ```
 
 `group_lists.R` - Script to group attribute lists. **Will pull all files from input directory. Assumes directory contains only files that are lists of identities.** Initial implementation uses the [sillhoutte method and k-medoids](https://en.wikipedia.org/wiki/K-medoids) to automatically identify the best guess for number of groups and clusters them with strict partitioning (each file is in one and only group). 
+
 *notes: It currently does not handle passing in a manual mapping file of groups. Nor does it give recommendations for possible alternative groupings beyond the optimal k-medoids guess. These would both be helpful to add in the future.*
 
 example call) `Rscript group_lists.R /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping`
@@ -84,10 +86,11 @@ files	grouping
 ```
 
 `add_lists.R` - Script to classify one or more lists to an existing set of groups. Takes an input directory with a grouping file and km object and writes out a new grouping file to an output directory with the additional lists appended. Trailing arguments are file names to be added. Will output a coarse estimate of how well the lists fit into their respective groups. This is based on their distance to the medoid compared to the mean, min, and max distances within that medoid.
+
 *notes: Km object will NOT be uptated to consider new lists and new lists will NOT be evaluated as a potential new medoid. Regroup full set of lists using group_lists.R to updated Km object. Have not yet allowed for manual selection and evaluation of list group, but this would be helpful to add in the future. Opted for specific file names rather than directory approach but could be good to swap to reading full directory depending on use case.*
 
-*notes: reran group_lists.R for 80 of the 85 files. The files used in this call were the 5 not included in the original grouping.*
-example call) `(lolparse) penny:lol-parsing dfackler$ Rscript add_lists.R /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_80 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_5 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/flippers.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/big.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/solitary.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/meatteeth.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/forest.txt`
+*example call note: reran group_lists.R for 80 of the 85 files. The files used in this call were the 5 not included in the original grouping.*
+example call) `Rscript add_lists.R /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_80 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_5 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/flippers.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/big.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/solitary.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/meatteeth.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/forest.txt`
 
 Output: 
 ```
