@@ -90,9 +90,10 @@ files	grouping
 ### `add_lists.R`
 Script to classify one or more lists to an existing set of groups. Takes an input directory with a grouping file and km object and writes out a new grouping file to an output directory with the additional lists appended. Trailing arguments are file names to be added. Will output a coarse estimate of how well the lists fit into their respective groups. This is based on their distance to the medoid compared to the mean, min, and max distances within that medoid.
 
-*notes: Km object will NOT be uptated to consider new lists and new lists will NOT be evaluated as a potential new medoid. Regroup full set of lists using group_lists.R to updated Km object. Have not yet allowed for manual selection and evaluation of list group, but this would be helpful to add in the future. Opted for specific file names rather than directory approach but could be good to swap to reading full directory depending on use case.*
+*notes: Km object will NOT be updated to consider new lists and new lists will NOT be evaluated as a potential new medoid. Regroup full set of lists using group_lists.R to updated Km object. Have not yet allowed for manual selection and evaluation of list group, but this would be helpful to add in the future. Opted for specific file names rather than directory approach but could be good to swap to reading full directory depending on use case.*
 
 *example call note: reran group_lists.R for 80 of the 85 files. The files used in this call were the 5 not included in the original grouping.*
+
 example call) `Rscript add_lists.R /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_80 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/grouping_5 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/flippers.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/big.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/solitary.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/meatteeth.txt /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped_5/forest.txt`
 
 Output: 
