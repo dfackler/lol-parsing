@@ -37,7 +37,7 @@ horse
 german_shepherd
 ```
 
-###`group_lists.R`
+### `group_lists.R`
 Script to group attribute lists. **Will pull all files from input directory. Assumes directory contains only files that are lists of identities.** Initial implementation uses the [sillhoutte method and k-medoids](https://en.wikipedia.org/wiki/K-medoids) to automatically identify the best guess for number of groups and clusters them with strict partitioning (each file is in one and only group). 
 
 *notes: It currently does not handle passing in a manual mapping file of groups. Nor does it give recommendations for possible alternative groupings beyond the optimal k-medoids guess. These would both be helpful to add in the future.*
@@ -87,7 +87,7 @@ files	grouping
 /Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2_test/prepped/big.txt	3
 ```
 
-###`add_lists.R`
+### `add_lists.R`
 Script to classify one or more lists to an existing set of groups. Takes an input directory with a grouping file and km object and writes out a new grouping file to an output directory with the additional lists appended. Trailing arguments are file names to be added. Will output a coarse estimate of how well the lists fit into their respective groups. This is based on their distance to the medoid compared to the mean, min, and max distances within that medoid.
 
 *notes: Km object will NOT be uptated to consider new lists and new lists will NOT be evaluated as a potential new medoid. Regroup full set of lists using group_lists.R to updated Km object. Have not yet allowed for manual selection and evaluation of list group, but this would be helpful to add in the future. Opted for specific file names rather than directory approach but could be good to swap to reading full directory depending on use case.*
