@@ -10,10 +10,12 @@
 # TODO: allow for person to enter predicted group and give feedback on whether it is best and quality (optional named arg?)
 # TODO: update km with new lists (maybe?)
 
-library(dplyr)
-library(readr)
-library(stringr)
-library(cluster)
+list_of_packages <- c("dplyr", "readr", "stringr", "cluster")
+
+new_packages <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+lapply(list_of_packages, require, character.only = TRUE)
 
 # args = c("/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_train",
 # "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_test",

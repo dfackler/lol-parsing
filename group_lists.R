@@ -8,10 +8,15 @@
 # TODO: provide optional mapping file as input which defines manual groups to create but still generate distance metrics
 #       for the scenario where lists might be grouped by common labels (new script?)
 
-library(dplyr)
-library(readr)
-library(stringr)
-library(cluster)
+##############################################
+#### Install and load packages ####
+##############################################
+list_of_packages <- c("dplyr", "readr", "stringr", "cluster")
+
+new_packages <- list_of_packages[!(list_of_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+lapply(list_of_packages, require, character.only = TRUE)
 
 # input_dir = "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/prepped"
 # output_file = "/Users/dfackler/Desktop/lol_training_data/Animals_with_Attributes2/grouping_map.txt"
